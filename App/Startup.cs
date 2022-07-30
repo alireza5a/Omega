@@ -55,14 +55,23 @@ namespace App
                 });
                 endpoints.MapGet("/POW", async context =>
                 {
+                    var transaction = SentrySdk.StartTransaction(
+                        "Omega",
+                        "POW"
+                    );
+                    var getParametersSpan = transaction.StartChild("Get-parameters-from-querystring");
                     Console.WriteLine(SentrySdk.GetSpan().TraceId);
                     Console.WriteLine("**" + SentrySdk.GetTraceHeader().TraceId);
                     var queryCollection = context.Request.Query;
                     var a = Convert.ToInt32(queryCollection["a"]);
                     var b = Convert.ToInt32(queryCollection["b"]);
+                    getParametersSpan.Finish(SpanStatus.Ok);
+                    var powerSpan = transaction.StartChild("Power-operation");
                     if (a == 2 && b == 3)
                         System.Threading.Thread.Sleep(5000);
                     await context.Response.WriteAsync(Math.Pow(a, b).ToString());
+                    powerSpan.Finish(SpanStatus.Ok);
+                    transaction.Finish(SpanStatus.Ok);
                 });	
                 endpoints.MapGet("/Exception", async context =>
                 {
