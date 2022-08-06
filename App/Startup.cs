@@ -72,7 +72,23 @@ namespace App
                     await context.Response.WriteAsync(Math.Pow(a, b).ToString());
                     powerSpan.Finish(SpanStatus.Ok);
                     transaction.Finish(SpanStatus.Ok);
-                });	
+                });
+                endpoints.MapGet("/Multiply", async context =>
+                {
+                    var transaction = SentrySdk.StartTransaction(
+                        "Omega",
+                        "Multiply"
+                    );
+                    var multiplySpan = transaction.StartChild("Multiply-operation");
+                    var queryCollection = context.Request.Query;
+                    var a = Convert.ToInt32(queryCollection["a"]);
+                    var b = Convert.ToInt32(queryCollection["b"]);
+                    if (a == 8 && b == 4)
+                        System.Threading.Thread.Sleep(5000);
+                    await context.Response.WriteAsync((a * b).ToString());
+                    multiplySpan.Finish(SpanStatus.Ok);
+                    transaction.Finish(SpanStatus.Ok);
+                });
                 endpoints.MapGet("/Exception", async context =>
                 {
                     throw new ApplicationException("An Exception Occured!");
