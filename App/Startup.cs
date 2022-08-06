@@ -55,10 +55,18 @@ namespace App
                 });
                 endpoints.MapGet("/POW", async context =>
                 {
-                    var transaction = SentrySdk.StartTransaction(
-                        "Omega",
-                        "POW"
-                    );
+                    SentryTraceHeader sentryTraceHeader = null;
+                    if (context.Request.Headers.TryGetValue("sentry-trace", out var sentryTraceHeaderValue))
+                    {
+                        sentryTraceHeader = SentryTraceHeader.Parse(sentryTraceHeaderValue.ToString());
+                    }
+                    var transaction = sentryTraceHeader == null
+                        ? SentrySdk.StartTransaction(
+                            "Omega",
+                            "POW")
+                        : SentrySdk.StartTransaction(
+                            "Omega",
+                            "POW", sentryTraceHeader);
                     var getParametersSpan = transaction.StartChild("Get-parameters-from-querystring");
                     Console.WriteLine(SentrySdk.GetSpan().TraceId);
                     Console.WriteLine("**" + SentrySdk.GetTraceHeader().TraceId);
@@ -75,10 +83,18 @@ namespace App
                 });
                 endpoints.MapGet("/Multiply", async context =>
                 {
-                    var transaction = SentrySdk.StartTransaction(
-                        "Omega",
-                        "Multiply"
-                    );
+                    SentryTraceHeader sentryTraceHeader = null;
+                    if (context.Request.Headers.TryGetValue("sentry-trace", out var sentryTraceHeaderValue))
+                    {
+                        sentryTraceHeader = SentryTraceHeader.Parse(sentryTraceHeaderValue.ToString());
+                    }
+                    var transaction = sentryTraceHeader == null
+                        ? SentrySdk.StartTransaction(
+                            "Omega",
+                            "Multiply")
+                        : SentrySdk.StartTransaction(
+                            "Omega",
+                            "Multiply", sentryTraceHeader);
                     var multiplySpan = transaction.StartChild("Multiply-operation");
                     var queryCollection = context.Request.Query;
                     var a = Convert.ToInt32(queryCollection["a"]);
